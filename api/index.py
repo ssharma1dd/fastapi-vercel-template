@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List, Optional
+import fitz
+import os
 
 app = FastAPI()
 
@@ -14,7 +16,15 @@ items_db = []
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Sample API on Vercel!"}
+    try:
+        file_path = os.path.join(os.path.dirname(__file__), "sample_data", "sample.pdf")
+        doc = fitz.open(file_path)
+        text = ""
+        for page in doc:
+            text += page.get_text()
+        return {"content": text[:500000000]}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.get("/items", response_model=List[Item])
 def get_items():
